@@ -1,0 +1,157 @@
+import {
+    Button,
+    LineEdit,
+    ScrollView,
+    StandardButton,
+    HorizontalBox,
+} from "std-widgets.slint";
+
+export component MainWindow inherits Window {
+    width: 320px;
+    height: 480px;
+
+    in-out property <string> label_text: "";
+    callback button_pressed(string, string, string, string);
+
+    VerticalLayout {
+        HorizontalLayout {
+            alignment: LayoutAlignment.center;
+            height: 44px;
+            padding-top: 12px;
+            spacing: 12px;
+            Button {
+                accessible-role: AccessibleRole.button;
+                text: "Current Orbit";
+                width: 128px;
+            }
+
+            Button {
+                text: "Orbit Transfer";
+                width: 128px;
+            }
+        }
+
+        VerticalLayout {
+            padding: 16px;
+            spacing: 12px;
+            Text {
+                font-size: 16px;
+                height: 16px;
+                text: "Orbital data:";
+            }
+
+            sma_input := LineEdit {
+                font-size: 16px;
+                height: 48px;
+                placeholder-text: "Semi-major axis (km)";
+            }
+
+            ecc_input := LineEdit {
+                font-size: 16px;
+                height: 48px;
+                placeholder-text: "Eccentricity";
+            }
+
+            tan_input := LineEdit {
+                font-size: 16px;
+                height: 48px;
+                placeholder-text: "True Anomaly (deg)";
+            }
+        }
+
+        VerticalLayout {
+            padding: 16px;
+            spacing: 6px;
+
+            Text {
+                font-size: 16px;
+                height: 16px;
+                text: "Calculate:";
+            }
+
+            ScrollView {
+                height: 48px;
+                horizontal-scrollbar-policy: ScrollBarPolicy.always-on;
+                mouse-drag-pan-enabled: true;
+                viewport-width: 1040px;
+                Button {
+                    text: "Current Radius";
+                    width: 128px;
+                    x: 0px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("rad", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Period";
+                    width: 128px;
+                    x: 144px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("prd", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Velocity";
+                    width: 128px;
+                    x: 288px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("vel", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Periapsis";
+                    width: 128px;
+                    x: 432px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("pe", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Apoapsis";
+                    width: 128px;
+                    x: 576px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("apo", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Sp. Orbital Energy";
+                    width: 128px;
+                    x: 720px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("soe", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+
+                Button {
+                    text: "Sp. Angular Momentum";
+                    width: 160px;
+                    x: 864px;
+                    y: 0px;
+                    clicked => {
+                        root.button-pressed("sam", sma_input.text, ecc_input.text, tan_input.text);
+                    }
+                }
+            }
+
+            Text {
+                font-size: 16px;
+                height: 32px;
+                text <=> root.label_text;
+                visible: root.label_text.character-count > 0;
+                x: 0px;
+            }
+        }
+    }
+}

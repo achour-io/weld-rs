@@ -1,18 +1,9 @@
 use std::io::{self, Write};
 use std::f64::consts;
+slint::include_modules!();
 
 fn str_to_f64(input : String) -> f64 {
     input.trim().parse().unwrap()
-}
-
-fn get_input(prompt : &str) -> String {
-    print!("{prompt}");
-    io::stdout().flush().unwrap();
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read line");
-    input
 }
 
 fn calculate_current_radius(sma : f64, ecc : f64, tan : f64) -> f64 {
@@ -53,35 +44,32 @@ fn format_time(time : f64) -> String {
     }
 }
 
-fn main() {
-    println!("- The Orbital 1000 -");
-    println!("--------------------");
-
+fn main() -> Result<(), slint::PlatformError> {
     // Earth constants
     let radius_earth : f64 = 6371.0; // km
     let mu_earth: f64 = 398600.4418; // km^3/s^2
 
-    // User inputs
-    let sma : f64 = str_to_f64(get_input("Semi-major axis (km): "));
-    let ecc : f64 = str_to_f64(get_input("Eccentricity: "));
-    let tan : f64 = str_to_f64(get_input("True Anomaly (degrees): "));
-    println!("--------------------");
+    let app = MainWindow::new()?;
+    let weak_app = app.as_weak();
 
-    // Calculations
-    let radius : f64 = calculate_current_radius(sma, ecc, tan);
-    let velocity : f64 = calculate_velocity(sma, radius, mu_earth);
-    let period : f64 = calculate_period(sma, mu_earth);
-    let periapsis : f64 = calculate_periapsis(sma, ecc);
-    let apoapsis : f64 = calculate_apoapsis(sma, ecc);
-    let sp_orbital_energy : f64 = calculate_sp_orbital_energy(sma, mu_earth);
-    let sp_angular_momentum : f64 = calculate_sp_angular_momentum(sma, ecc, mu_earth);
+    app.on_button_pressed(move |op, sma_str, ecc_str, tan_str| {
+        let app = weak_app.unwrap();
 
-    // Outputs
-    println!("Current Altitude (ASL): {} km", radius-radius_earth);
-    println!("Apoapsis (ASL): {} km", apoapsis-radius_earth);
-    println!("Periapsis (ASL): {} km", periapsis-radius_earth);
-    println!("Current Velocity: {velocity} km/s");
-    println!("Orbital Period: {}", format_time(period));
-    println!("Specific Orbital Energy: {}", sp_orbital_energy);
-    println!("Specific Angular Momentum: {}", sp_angular_momentum);
+        let sma = str_to_f64(sma_str.to_string());
+        let ecc = str_to_f64(ecc_str.to_string());
+        let tan = str_to_f64(tan_str.to_string());
+
+        app.set_label_text(match op.as_str() {
+            "rad" => format!("Current Altitude (ASL): {:.2} km", calculate_current_radius(sma, ecc, tan)-radius_earth).into(),
+            "prd" => format!("Orbital Period: {}", format_time(calculate_period(sma, mu_earth))).into(),
+            "vel" => format!("Velocity: {:.2} km/s", calculate_velocity(sma, calculate_current_radius(sma, ecc, tan), mu_earth)).into(),
+            "pe" => format!("Periapsis (ASL): {:.2} km", calculate_periapsis(sma, ecc)-radius_earth).into(),
+            "apo" => format!("Apoapsis (ASL): {:.2} km", calculate_apoapsis(sma, ecc)-radius_earth).into(),
+            "soe" => format!("Specific Orbital Energy: {:.2} km²/s²", calculate_sp_orbital_energy(sma, mu_earth)).into(),
+            "sam" => format!("Specific Angular Momentum: {:.2} km²/s", calculate_sp_angular_momentum(sma, ecc, mu_earth)).into(),
+            _ => "Invalid operation".into(),
+        });
+    });
+
+    app.run()
 }
